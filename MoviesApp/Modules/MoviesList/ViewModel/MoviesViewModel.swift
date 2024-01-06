@@ -11,7 +11,8 @@ class MoviesViewModel {
     
     var networkService : NetworkService!
     
-    var result : MovieResult!{
+    var totalPages : Int!
+    var moviesArray = [MovieObj](){
         
        didSet{
            self.bindMoviesViewModelToView()
@@ -37,17 +38,19 @@ class MoviesViewModel {
     func getNowPlayingMovies(pageNumber : Int){
         networkService.getNowPlayingMovies(page: pageNumber) { [unowned self] movieResult, error in
             if let movieResult = movieResult {
-                result = movieResult
+                totalPages = movieResult.total_pages
+                moviesArray.append(contentsOf: movieResult.results ?? [])
             }else{
                 showError = error?.localizedDescription
             }
         }
     }
     
-    func getPopularMovies(pageNumber : Int){
+    func getMostPopularMovies(pageNumber : Int){
         networkService.getPopularMovies(page: pageNumber) { [unowned self] movieResult, error in
             if let movieResult = movieResult {
-                result = movieResult
+                totalPages = movieResult.total_pages
+                moviesArray.append(contentsOf: movieResult.results ?? [])
             }else{
                 showError = error?.localizedDescription
             }
@@ -57,7 +60,8 @@ class MoviesViewModel {
     func getTopRatedMovies(pageNumber : Int){
         networkService.getTopRatedMovies(page: pageNumber) { [unowned self] movieResult, error in
             if let movieResult = movieResult {
-                result = movieResult
+                totalPages = movieResult.total_pages
+                moviesArray.append(contentsOf: movieResult.results ?? [])
             }else{
                 showError = error?.localizedDescription
             }

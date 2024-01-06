@@ -21,24 +21,34 @@ class MoviesCollectionViewController: UICollectionViewController {
     var totalPages : Int = 0
     var estimatedWidth = 185.0
     var cellMarginSize = 10.0
+    var currentPage = 1
     let activityIndicator = UIActivityIndicatorView(style: .large)
+    var currentSortingCriteria : SortingCriteria = .nowPlaying
+    var isLoadingData : Bool!
     	
     @IBAction func showBarButttonDropDown(_ sender: Any) {
         
         rightBarDropDown.show()
         // Action triggered on selection
         rightBarDropDown.selectionAction = { [unowned self] (index: Int, item: String) in
-                
-            if index == 0 {
-                moviesViewModel.getPopularMovies(pageNumber: 1)
-            }else if index == 1{
-                moviesViewModel.getTopRatedMovies(pageNumber: 1)
-            }else{
-                moviesViewModel.getNowPlayingMovies(pageNumber: 1)
+            
+            currentPage = 1
+            moviesArray.removeAll()
+            moviesViewModel.moviesArray.removeAll()
+            isLoadingData = true
+            DispatchQueue.main.async {
+                self.activityIndicator.startAnimating()
             }
             
-            DispatchQueue.main.async {
-                self.scrollToTop()
+            if index == 0 {
+                currentSortingCriteria = .mostPopular
+                moviesViewModel.getMostPopularMovies(pageNumber: currentPage)
+            }else if index == 1{
+                currentSortingCriteria = .topRated
+                moviesViewModel.getTopRatedMovies(pageNumber: currentPage)
+            }else{
+                currentSortingCriteria = .nowPlaying
+                moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
             }
         }
     }
@@ -88,12 +98,15 @@ class MoviesCollectionViewController: UICollectionViewController {
         activityIndicator.startAnimating()
         
         title = "Movies List"
+        
+        isLoadingData = true
+        collectionView.isPrefetchingEnabled = true
     }
      
     func dropDownSetup() {
         
         rightBarDropDown.anchorView = sortBarButton
-        rightBarDropDown.dataSource = Constants.dropDownList
+        rightBarDropDown.dataSource = SortingCriteria.allValues.map{$0.rawValue}
         rightBarDropDown.backgroundColor = .black
         rightBarDropDown.selectionBackgroundColor = .gray
         rightBarDropDown.selectedTextColor = UIColor(named: "Purple") ?? .white
@@ -112,10 +125,11 @@ class MoviesCollectionViewController: UICollectionViewController {
     //update the view if Fetching the movies succeeded
     func onSuccessUpdateView(){
         
+        isLoadingData = false
         activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
-        moviesArray = moviesViewModel.result.results ?? []
-        totalPages = moviesViewModel.result.total_pages ?? 0
+        moviesArray = moviesViewModel.moviesArray
+        totalPages = moviesViewModel.totalPages
         self.collectionView.reloadData()
         
     }
@@ -129,11 +143,21 @@ class MoviesCollectionViewController: UICollectionViewController {
         
     }
     
-    //function to scroll top when user is at the bottom of collection view
-    func scrollToTop() {
+    func loadMoreData() {
         
-        let topItem = IndexPath(item: 0, section: 0)
-        self.collectionView.scrollToItem(at: topItem, at: .top, animated: false)
+        currentPage += 1
+        isLoadingData = true
+        
+        if currentPage <= totalPages{
+                switch currentSortingCriteria {
+                case .mostPopular:
+                    moviesViewModel.getMostPopularMovies(pageNumber: currentPage)
+                case .topRated:
+                    moviesViewModel.getTopRatedMovies(pageNumber: currentPage)
+                case .nowPlaying:
+                    moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
+                }
+        }
     }
 
     
@@ -178,11 +202,20 @@ class MoviesCollectionViewController: UICollectionViewController {
     
         return cell
     }
+    
+    override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.section == collectionView.numberOfSections - 1 &&
+                    indexPath.row == collectionView.numberOfItems(inSection: indexPath.section) - 1 {
+                    if !isLoadingData{
+                        loadMoreData()
+                    }
+                }
+    }
 
 }
 
 
-// MARK: Extension
+// MARK: UICollectionViewDelegateFlowLayout Extension
 
 extension MoviesCollectionViewController : UICollectionViewDelegateFlowLayout {
     
@@ -204,4 +237,26 @@ extension MoviesCollectionViewController : UICollectionViewDelegateFlowLayout {
         return width
     }
     
+}
+
+// MARK: UICollectionViewDataSourcePrefetching Extension
+
+extension MoviesCollectionViewController : UICollectionViewDataSourcePrefetching{
+
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            let dataIndex = indexPath.item
+
+            // Check if data for the current index is not already loaded
+            if dataIndex >= moviesArray.count {
+                // Load additional data for the prefetched indexPath
+                // This is where you can initiate the fetch for more data to be displayed soon
+                if !isLoadingData {
+                    loadMoreData()
+                }
+            }
+        }
+
+    }
+
 }
