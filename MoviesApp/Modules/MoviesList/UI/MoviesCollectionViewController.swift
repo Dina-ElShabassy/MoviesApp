@@ -24,36 +24,31 @@ class MoviesCollectionViewController: UICollectionViewController {
     let activityIndicator = UIActivityIndicatorView(style: .large)
     	
     @IBAction func showBarButttonDropDown(_ sender: Any) {
-        // Action triggered on selection
-        rightBarDropDown.selectionAction = { (index: Int, item: String) in
-                print("Selected item: \(item) at index: \(index)") }
-
-        rightBarDropDown.width = UIScreen.main.bounds.width/2
-        rightBarDropDown.bottomOffset = CGPoint(x: 0, y:(rightBarDropDown.anchorView?.plainView.bounds.height)!)
         
         rightBarDropDown.show()
+        // Action triggered on selection
+        rightBarDropDown.selectionAction = { [unowned self] (index: Int, item: String) in
+                
+            if index == 0 {
+                moviesViewModel.getPopularMovies(pageNumber: 1)
+            }else if index == 1{
+                moviesViewModel.getTopRatedMovies(pageNumber: 1)
+            }else{
+                moviesViewModel.getNowPlayingMovies(pageNumber: 1)
+            }
+            
+            DispatchQueue.main.async {
+                self.scrollToTop()
+            }
+        }
     }
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        //changing the tint color of the navigationbar
-        self.navigationController?.navigationBar.tintColor = .black
-        //text color of the navigationbar
-        let textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-        navigationController?.navigationBar.titleTextAttributes = textAttributes as [NSAttributedString.Key : Any]
+        self.viewSetup()
         
-        //show the activity indicator
-        collectionView.backgroundView = activityIndicator
-        activityIndicator.color = .purple
-        activityIndicator.startAnimating()
-        
-        title = "Movies List"
-        
-        //dropdown
-        rightBarDropDown.anchorView = sortBarButton
-        rightBarDropDown.dataSource = Constants.dropDownList
+        self.dropDownSetup()
 
-        //setupGridView
         self.setupGridView()
         
         //create an instance from the movies view model class
@@ -79,7 +74,35 @@ class MoviesCollectionViewController: UICollectionViewController {
     }
     
     // MARK: - ViewControllerFunctions
+    
+    func viewSetup() {
+        //changing the tint color of the navigationbar
+        self.navigationController?.navigationBar.tintColor = .black
+        //text color of the navigationbar
+        let textAttributes = [NSAttributedString.Key.foregroundColor: UIColor(named: "Purple")]
+        navigationController?.navigationBar.titleTextAttributes = textAttributes as [NSAttributedString.Key : Any]
+        
+        //show the activity indicator
+        collectionView.backgroundView = activityIndicator
+        activityIndicator.color = UIColor(named: "Purple")
+        activityIndicator.startAnimating()
+        
+        title = "Movies List"
+    }
      
+    func dropDownSetup() {
+        
+        rightBarDropDown.anchorView = sortBarButton
+        rightBarDropDown.dataSource = Constants.dropDownList
+        rightBarDropDown.backgroundColor = .black
+        rightBarDropDown.selectionBackgroundColor = .gray
+        rightBarDropDown.selectedTextColor = UIColor(named: "Purple") ?? .white
+        rightBarDropDown.textColor = UIColor(named: "Purple") ?? .white
+        rightBarDropDown.width = UIScreen.main.bounds.width/2
+        rightBarDropDown.bottomOffset = CGPoint(x: 0, y:(rightBarDropDown.anchorView?.plainView.bounds.height)!)
+        
+    }
+    
     func setupGridView() {
         let flow = collectionView?.collectionViewLayout as! UICollectionViewFlowLayout
         flow.minimumInteritemSpacing = CGFloat(self.cellMarginSize)
@@ -105,16 +128,30 @@ class MoviesCollectionViewController: UICollectionViewController {
         Alert().showAlert(title: "Error", message: moviesViewModel.showError, vc: self)
         
     }
+    
+    //function to scroll top when user is at the bottom of collection view
+    func scrollToTop() {
+        
+        let topItem = IndexPath(item: 0, section: 0)
+        self.collectionView.scrollToItem(at: topItem, at: .top, animated: false)
+    }
 
-    /*
+    
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
+            
+        super.prepare(for: segue, sender: sender)
+        if segue.identifier == "showDetailsSegue" {
+
+            let detailsVC = segue.destination as! MovieDetailsViewController
+            let cell = sender as! MovieCollectionViewCell
+            let indexPaths = self.collectionView.indexPath(for: cell)
+            detailsVC.movieObj = self.moviesArray[indexPaths!.row]
+
+        }
+        
     }
-    */
 
     // MARK: UICollectionViewDataSource
 
