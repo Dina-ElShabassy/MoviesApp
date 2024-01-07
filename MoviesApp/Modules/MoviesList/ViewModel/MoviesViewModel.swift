@@ -34,30 +34,8 @@ class MoviesViewModel {
         networkService = NetworkService()
     }
     
-    func getNowPlayingMovies(pageNumber : Int){
-        networkService.getNowPlayingMovies(page: pageNumber) { [unowned self] movieResult, error in
-            if let movieResult = movieResult {
-                totalPages = movieResult.total_pages
-                moviesArray.append(contentsOf: movieResult.results ?? [])
-            }else{
-                showError = error?.localizedDescription
-            }
-        }
-    }
-    
-    func getMostPopularMovies(pageNumber : Int){
-        networkService.getPopularMovies(page: pageNumber) { [unowned self] movieResult, error in
-            if let movieResult = movieResult {
-                totalPages = movieResult.total_pages
-                moviesArray.append(contentsOf: movieResult.results ?? [])
-            }else{
-                showError = error?.localizedDescription
-            }
-        }
-    }
-    
-    func getTopRatedMovies(pageNumber : Int){
-        networkService.getTopRatedMovies(page: pageNumber) { [unowned self] movieResult, error in
+    func getMoviesArray(pageNumber : Int, sortingCriteria : SortingCriteria){
+        networkService.requestMovies(sortingCriteria: sortingCriteria, page: pageNumber) { [unowned self] movieResult, error in
             if let movieResult = movieResult {
                 totalPages = movieResult.total_pages
                 moviesArray.append(contentsOf: movieResult.results ?? [])

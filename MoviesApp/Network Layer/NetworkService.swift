@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-class NetworkService {
+class NetworkService : ServiceProtocol{
     
     private let baseURL = Constants.baseURL
     private let accessToken = Constants.accessToken
@@ -31,22 +31,20 @@ class NetworkService {
                                 completion(nil,error)
                         }
                     }
-        
     }
-    
-    func getNowPlayingMovies(page: Int, completion: @escaping (MovieResult?, Error?) -> ()) {
+
+    func requestMovies(sortingCriteria : SortingCriteria, page: Int, completion: @escaping (MovieResult?, Error?) -> ()) {
         let params = ["page": "\(page)"]
-        makeRequest(endPoint: "movie/now_playing", params: params, completion: completion)
-    }
-        
-    func getPopularMovies(page: Int, completion: @escaping (MovieResult?, Error?) -> ()) {
-        let params = ["page": "\(page)"]
-        makeRequest(endPoint: "movie/popular", params: params, completion: completion)
-    }
-        
-    func getTopRatedMovies(page: Int, completion: @escaping (MovieResult?, Error?) -> ()) {
-        let params = ["page": "\(page)"]
-        makeRequest(endPoint: "movie/top_rated", params: params, completion: completion)
+        var criteriaEndpoint : String!
+        switch sortingCriteria {
+        case .mostPopular:
+            criteriaEndpoint = "movie/popular"
+        case .topRated:
+            criteriaEndpoint = "movie/top_rated"
+        case .nowPlaying:
+            criteriaEndpoint = "movie/now_playing"
+        }
+        makeRequest(endPoint: criteriaEndpoint, params: params, completion: completion)
     }
     
 }

@@ -45,16 +45,14 @@ class MoviesCollectionViewController: UICollectionViewController {
             if index == 0 {
                 title = "Most Popular Movies"
                 currentSortingCriteria = .mostPopular
-                moviesViewModel.getMostPopularMovies(pageNumber: currentPage)
             }else if index == 1{
                 title = "Top Rated Movies"
                 currentSortingCriteria = .topRated
-                moviesViewModel.getTopRatedMovies(pageNumber: currentPage)
             }else{
                 title = "Now Playing Movies"
                 currentSortingCriteria = .nowPlaying
-                moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
             }
+            moviesViewModel.getMoviesArray(pageNumber: currentPage, sortingCriteria: currentSortingCriteria)
         }
     }
     override func viewDidLoad() {
@@ -110,8 +108,8 @@ class MoviesCollectionViewController: UICollectionViewController {
                 collectionView.backgroundView = activityIndicator
                 activityIndicator.color = UIColor(named: "Purple")
                 activityIndicator.startAnimating()
-                moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
-                
+                //moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
+                moviesViewModel.getMoviesArray(pageNumber: currentPage, sortingCriteria: .nowPlaying)
             })
         }
     }
@@ -175,14 +173,7 @@ class MoviesCollectionViewController: UICollectionViewController {
         isLoadingData = true
         
         if currentPage <= totalPages{
-                switch currentSortingCriteria {
-                case .mostPopular:
-                    moviesViewModel.getMostPopularMovies(pageNumber: currentPage)
-                case .topRated:
-                    moviesViewModel.getTopRatedMovies(pageNumber: currentPage)
-                case .nowPlaying:
-                    moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
-                }
+            moviesViewModel.getMoviesArray(pageNumber: currentPage, sortingCriteria: currentSortingCriteria)
         }
     }
 
