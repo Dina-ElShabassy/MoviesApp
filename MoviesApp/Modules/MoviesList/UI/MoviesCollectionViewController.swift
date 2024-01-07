@@ -8,6 +8,7 @@
 import UIKit
 import DropDown
 import SDWebImage
+import Lottie
 
 private let reuseIdentifier = "movieCell"
 
@@ -25,6 +26,7 @@ class MoviesCollectionViewController: UICollectionViewController {
     let activityIndicator = UIActivityIndicatorView(style: .large)
     var currentSortingCriteria : SortingCriteria = .nowPlaying
     var isLoadingData : Bool!
+    var animationView : AnimationView!
     	
     @IBAction func showBarButttonDropDown(_ sender: Any) {
         
@@ -41,12 +43,15 @@ class MoviesCollectionViewController: UICollectionViewController {
             }
             
             if index == 0 {
+                title = "Most Popular Movies"
                 currentSortingCriteria = .mostPopular
                 moviesViewModel.getMostPopularMovies(pageNumber: currentPage)
             }else if index == 1{
+                title = "Top Rated Movies"
                 currentSortingCriteria = .topRated
                 moviesViewModel.getTopRatedMovies(pageNumber: currentPage)
             }else{
+                title = "Now Playing Movies"
                 currentSortingCriteria = .nowPlaying
                 moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
             }
@@ -54,6 +59,8 @@ class MoviesCollectionViewController: UICollectionViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.animationSetup()
 
         self.viewSetup()
         
@@ -85,6 +92,30 @@ class MoviesCollectionViewController: UICollectionViewController {
     
     // MARK: - ViewControllerFunctions
     
+    func animationSetup() {
+        
+        animationView = .init(name: "Animation")
+        
+        self.collectionView.backgroundView = animationView
+        self.navigationController?.navigationBar.isHidden = true
+
+        animationView.animationSpeed = 0.5
+        //play the animation view for 5 secs and after that fetch now playing movies to display them
+        animationView.play { _ in
+            UIView.animate(withDuration: 0.5, animations: {
+                self.animationView.alpha = 0
+            }, completion: {[self] _ in
+                self.navigationController?.navigationBar.isHidden = false
+                //show the activity indicator
+                collectionView.backgroundView = activityIndicator
+                activityIndicator.color = UIColor(named: "Purple")
+                activityIndicator.startAnimating()
+                moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
+                
+            })
+        }
+    }
+    
     func viewSetup() {
         //changing the tint color of the navigationbar
         self.navigationController?.navigationBar.tintColor = .black
@@ -92,12 +123,7 @@ class MoviesCollectionViewController: UICollectionViewController {
         let textAttributes = [NSAttributedString.Key.foregroundColor: UIColor(named: "Purple")]
         navigationController?.navigationBar.titleTextAttributes = textAttributes as [NSAttributedString.Key : Any]
         
-        //show the activity indicator
-        collectionView.backgroundView = activityIndicator
-        activityIndicator.color = UIColor(named: "Purple")
-        activityIndicator.startAnimating()
-        
-        title = "Movies List"
+        title = "Now Playing Movies"
         
         isLoadingData = true
         collectionView.isPrefetchingEnabled = true
@@ -109,8 +135,8 @@ class MoviesCollectionViewController: UICollectionViewController {
         rightBarDropDown.dataSource = SortingCriteria.allValues.map{$0.rawValue}
         rightBarDropDown.backgroundColor = .black
         rightBarDropDown.selectionBackgroundColor = .gray
-        rightBarDropDown.selectedTextColor = UIColor(named: "Purple") ?? .white
-        rightBarDropDown.textColor = UIColor(named: "Purple") ?? .white
+        rightBarDropDown.selectedTextColor = .white
+        rightBarDropDown.textColor = .white
         rightBarDropDown.width = UIScreen.main.bounds.width/2
         rightBarDropDown.bottomOffset = CGPoint(x: 0, y:(rightBarDropDown.anchorView?.plainView.bounds.height)!)
         

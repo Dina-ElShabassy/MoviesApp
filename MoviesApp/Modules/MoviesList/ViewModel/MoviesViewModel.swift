@@ -32,7 +32,6 @@ class MoviesViewModel {
     
     init() {
         networkService = NetworkService()
-        getNowPlayingMovies(pageNumber: 1)
     }
     
     func getNowPlayingMovies(pageNumber : Int){
