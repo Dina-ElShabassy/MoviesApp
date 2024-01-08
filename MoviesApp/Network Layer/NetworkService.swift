@@ -38,11 +38,11 @@ class NetworkService : ServiceProtocol{
         var criteriaEndpoint : String!
         switch sortingCriteria {
         case .mostPopular:
-            criteriaEndpoint = "movie/popular"
+            criteriaEndpoint = Constants.endpoints.mostPopular
         case .topRated:
-            criteriaEndpoint = "movie/top_rated"
+            criteriaEndpoint = Constants.endpoints.topRated
         case .nowPlaying:
-            criteriaEndpoint = "movie/now_playing"
+            criteriaEndpoint = Constants.endpoints.nowPlaying
         }
         makeRequest(endPoint: criteriaEndpoint, params: params, completion: completion)
     }

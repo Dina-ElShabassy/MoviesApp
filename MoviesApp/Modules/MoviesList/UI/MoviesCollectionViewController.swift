@@ -108,7 +108,6 @@ class MoviesCollectionViewController: UICollectionViewController {
                 collectionView.backgroundView = activityIndicator
                 activityIndicator.color = UIColor(named: "Purple")
                 activityIndicator.startAnimating()
-                //moviesViewModel.getNowPlayingMovies(pageNumber: currentPage)
                 moviesViewModel.getMoviesArray(pageNumber: currentPage, sortingCriteria: .nowPlaying)
             })
         }
@@ -137,7 +136,7 @@ class MoviesCollectionViewController: UICollectionViewController {
         rightBarDropDown.textColor = .white
         rightBarDropDown.width = UIScreen.main.bounds.width/2
         rightBarDropDown.bottomOffset = CGPoint(x: 0, y:(rightBarDropDown.anchorView?.plainView.bounds.height)!)
-        
+        DropDown.appearance().setupCornerRadius(15)
     }
     
     func setupGridView() {
@@ -210,6 +209,10 @@ class MoviesCollectionViewController: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! MovieCollectionViewCell
     
+        cell.contentView.layer.cornerRadius = 15.0
+        cell.contentView.layer.borderWidth = 2.0
+        cell.contentView.layer.borderColor = UIColor.clear.cgColor
+        cell.contentView.layer.masksToBounds = true;
         
         // Configure the cell
         if let imagePath = moviesArray[indexPath.row].poster_path {

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Cosmos
 import SDWebImage
 
 class MovieDetailsViewController: UIViewController {
@@ -18,8 +17,7 @@ class MovieDetailsViewController: UIViewController {
     
     @IBOutlet weak var releaseDate: UILabel!
     
-    @IBOutlet weak var movieRating: CosmosView!
-    
+    @IBOutlet weak var rating: UILabel!
     var movieObj : MovieObj!
     
     override func viewDidLoad() {
@@ -37,12 +35,10 @@ class MovieDetailsViewController: UIViewController {
         movieTitle.text = movieObj.original_title ?? ""
         movieOverview.text = movieObj.overview ?? ""
         releaseDate.text = movieObj.release_date ?? ""
+        //get the first digit only after the decimal point
+        let movieRate = Double(round((movieObj.vote_average ?? 0) * 10) / 10)
+        rating.text = "\(movieRate)"
         
-        if let rating = movieObj.vote_average{
-            movieRating.rating = rating/2
-        }
-        // Do not change rating when touched
-        movieRating.settings.updateOnTouch = false
     }
 
 }
